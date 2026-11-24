@@ -1,0 +1,15 @@
+name: vid_klipzo_pro
+description: Vid Klipzo Pro App
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  youtube_player_flutter: ^9.0.1
+
+flutter:
+  uses-material-design: true
