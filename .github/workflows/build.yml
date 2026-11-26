@@ -19,8 +19,8 @@ jobs:
           rm -rf temp_app
       - name: Build APK
         run: |
-          sed -i 's/final List> _categories/final List<String> _categories/g' lib/main.dart
-          sed -i 's/final List>/final List>/g' lib/main.dart
+          sed -i 's/final List> _categories/final List _categories/g' lib/main.dart
+          sed -i 's/final List>/final List/g' lib/main.dart
           flutter pub get
           find /home/runner/.pub-cache -name "build.gradle" -exec sed -i 's/proguard-android\.txt/proguard-android-optimize\.txt/g' {} + || true
           flutter build apk --release
