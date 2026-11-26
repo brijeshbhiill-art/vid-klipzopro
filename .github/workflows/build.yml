@@ -20,6 +20,7 @@ jobs:
       - name: Build APK
         run: |
           flutter pub get
+          find /home/runner/.pub-cache -name "build.gradle" -exec sed -i 's/proguard-android\.txt/proguard-android-optimize\.txt/g' {} + || true
           flutter build apk --release
       - name: Upload APK
         uses: actions/upload-artifact@v4
