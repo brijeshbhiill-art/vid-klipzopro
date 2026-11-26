@@ -17,10 +17,9 @@ jobs:
           flutter create --project-name vid_klipzo_pro temp_app
           cp -r temp_app/android ./android
           rm -rf temp_app
+          sed -i 's/<application/<uses-permission android:name="android.permission.INTERNET"\/>\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"\/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"\/>\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"\/>\n    <application android:usesCleartextTraffic="true"/' android/app/src/main/AndroidManifest.xml
       - name: Build APK
         run: |
-          sed -i 's/final List> _categories/final List _categories/g' lib/main.dart
-          sed -i 's/final List>/final List/g' lib/main.dart
           flutter pub get
           find /home/runner/.pub-cache -name "build.gradle" -exec sed -i 's/proguard-android\.txt/proguard-android-optimize\.txt/g' {} + || true
           flutter build apk --release
