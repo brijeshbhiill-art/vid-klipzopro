@@ -1,5 +1,5 @@
 name: vid_klipzo_pro
-description: Vid Klipzo Pro App
+description: Vid Klipzo Pro Video Player and Downloader
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -9,7 +9,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  youtube_player_flutter: ^9.0.1
+  youtube_player_flutter: ^9.1.1
+  youtube_explode_dart: ^2.3.6
+  webview_flutter: ^4.10.0
+  http: ^1.2.2
+  path_provider: ^2.1.5
+  google_mobile_ads: ^5.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
