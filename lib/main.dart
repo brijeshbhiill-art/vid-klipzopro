@@ -141,7 +141,77 @@ class DownloadMgr {
     } catch (_) { item['status'] = 'Failed'; }
     onUpdate?.call();
   }
-};
+}
+class SplashScreen extends StatefulWidget {
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() { super.initState(); _go(); }
+  Future<void> _go() async {
+    var d = await getApplicationDocumentsDirectory();
+    bool ok = await File('${d.path}/user.txt').exists();
+    if (mounted) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ok ? Dashboard() : LoginPage()));
+  }
+  @override
+  Widget build(BuildContext context) => Scaffold(body: Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF))));
+}
+
+class LoginPage extends StatelessWidget {
+  final _c = TextEditingController();
+  Future<void> _login(BuildContext ctx) async {
+    var d = await getApplicationDocumentsDirectory();
+    var txt = _c.text.trim().isEmpty ? 'Vid Klipzo User\nGuest Account' : '${_c.text.split('@')[0]}\n${_c.text.trim()}';
+    await File('${d.path}/user.txt').writeAsString(txt);
+    Navigator.pushReplacement(ctx, MaterialPageRoute(builder: (_) => Dashboard()));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Vid Klipzo Pro', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
+              SizedBox(height: 8),
+              Text('Free 3 Days Trial • फिर ₹150 / 1 Month', style: TextStyle(color: Colors.amber)),
+              SizedBox(height: 24),
+              TextField(controller: _c, decoration: InputDecoration(hintText: 'Email या Phone डालें', filled: true, fillColor: Color(0xFF17172B), border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)))),
+              SizedBox(height: 18),
+              ElevatedButton(onPressed: () => _login(context), style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF00E5FF), minimumSize: Size(double.infinity, 50)), child: Text('Start 3-Day Free Trial', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold))),
+              TextButton(onPressed: () => _login(context), child: Text('Skip Login (Guest Mode)', style: TextStyle(color: Colors.white70))),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class Dashboard extends StatefulWidget {
+  @override
+  _DashboardState createState() => _DashboardState();
+}
+
+class _DashboardState extends State<Dashboard> {
+  int _idx = 0;
+  @override
+  void initState() { super.initState(); SubManager.i.onChange = () { if (mounted) setState(() {}); }; }
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = [HomeTab(goTab: (i) => setState(() => _idx = i)), DownloadsTab(), BrowserTab(), ProTab(), ProfileTab(goTab: (i) => setState(() => _idx = i))];
+    return Scaffold(
+      body: Column(children: [Expanded(child: pages[_idx]), BannerBox()]),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _idx, backgroundColor: Color(0xFF121224), selectedItemColor: Color(0xFF00E5FF), unselectedItemColor: Colors.white54, type: BottomNavigationBarType.fixed,
+        onTap: (i) => setState(() => _idx = i),
+        items: [
 class SplashScreen extends StatefulWidget {
   @override
   _SplashScreenState createState() => _SplashScreenState();
@@ -444,5 +514,161 @@ class _ProfileTabState extends State<ProfileTab> {
       SizedBox(height: 18),
       ElevatedButton.icon(onPressed: _logout, style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, minimumSize: Size(double.infinity, 48)), icon: Icon(Icons.logout, color: Colors.white), label: Text('Logout', style: TextStyle(color: Colors.white))),
     ]));
+  }
+}
+         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.download), label: 'Downloads'),
+          BottomNavigationBarItem(icon: Icon(Icons.language), label: 'Browser'),
+          BottomNavigationBarItem(icon: Icon(Icons.workspace_premium), label: 'Pro'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+      ),
+    );
+  }
+}
+
+class HomeTab extends StatelessWidget {
+  final Function(int) goTab;
+  final _url = TextEditingController();
+  HomeTab({required this.goTab});
+
+  void _play(BuildContext ctx, String raw) {
+    var u = raw.trim();
+    if (u.isEmpty) return;
+    if (u.startsWith('http://')) u = u.replaceFirst('http://', 'https://');
+    if (!u.startsWith('https://')) u = 'https://$u';
+    AdHelper.i.showAndRun(() {
+      var id = YoutubePlayer.convertUrlToId(u);
+      Navigator.push(ctx, MaterialPageRoute(builder: (_) => id != null ? YTPlayerPage(url: u, id: id) : WebPage(url: u, title: 'Video Player')));
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var s = SubManager.i;
+    var badge = s.isPro ? 'PRO' : (s.isTrial ? 'FREE ${s.trialDays}D' : 'PRO ₹150');
+    final samples = [
+      {'title': 'Sci-Fi Cinematic 4K Trailer', 'url': 'https://www.youtube.com/watch?v=aqz-KE-bpKQ', 'img': 'https://img.youtube.com/vi/aqz-KE-bpKQ/hqdefault.jpg'},
+      {'title': 'Desi Comedy & Music Mix', 'url': 'https://www.youtube.com/watch?v=LXb3EKWsInQ', 'img': 'https://img.youtube.com/vi/LXb3EKWsInQ/hqdefault.jpg'},
+    ];
+    return SafeArea(
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(14),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Vid Klipzo Pro', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                Row(children: [
+                  GestureDetector(onTap: () => goTab(3), child: Container(padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(border: Border.all(color: Colors.amber), borderRadius: BorderRadius.circular(12)), child: Text(badge, style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 12)))),
+                  SizedBox(width: 8),
+                  GestureDetector(onTap: () => goTab(4), child: CircleAvatar(radius: 17, backgroundColor: Color(0xFF1A1A32), child: Icon(Icons.person, color: Color(0xFF00E5FF), size: 20))),
+                ]),
+              ],
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 14), padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(color: Color(0xFF141428), borderRadius: BorderRadius.circular(16), border: Border.all(color: Color(0xFF00E5FF), width: 1.5)),
+            child: Row(children: [
+              Expanded(child: TextField(controller: _url, decoration: InputDecoration(hintText: 'किसी भी ऐप का लिंक पेस्ट करें...', border: InputBorder.none))),
+              TextButton(onPressed: () async { var d = await Clipboard.getData('text/plain'); if (d?.text != null) _url.text = d!.text!; }, child: Text('Paste', style: TextStyle(color: Color(0xFF00E5FF)))),
+              ElevatedButton(onPressed: () => _play(context, _url.text), style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFE040FB)), child: Text('Play', style: TextStyle(color: Colors.white))),
+            ]),
+          ),
+          SizedBox(height: 12),
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 14), itemCount: samples.length,
+              itemBuilder: (ctx, idx) {
+                var v = samples[idx];
+                return Card(
+                  color: Color(0xFF16162B), margin: EdgeInsets.only(bottom: 14),
+                  child: Column(children: [
+                    GestureDetector(onTap: () => _play(context, v['url']!), child: Image.network(v['img']!, height: 170, width: double.infinity, fit: BoxFit.cover)),
+                    ListTile(
+                      title: Text(v['title']!, style: TextStyle(fontWeight: FontWeight.bold)),
+                      trailing: ElevatedButton(onPressed: () => AdHelper.i.showAndRun(() { DownloadMgr.i.downloadYT(v['url']!, false); goTab(1); }), style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFD500F9)), child: Text('Download', style: TextStyle(color: Colors.white))),
+                    ),
+                  ]),
+                );
+              },
+      ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class YTPlayerPage extends StatefulWidget {
+  final String url, id;
+  YTPlayerPage({required this.url, required this.id});
+  @override
+  _YTPlayerPageState createState() => _YTPlayerPageState();
+}
+
+class _YTPlayerPageState extends State<YTPlayerPage> {
+  late YoutubePlayerController _c;
+  @override
+  void initState() { super.initState(); _c = YoutubePlayerController(initialVideoId: widget.id, flags: YoutubePlayerFlags(autoPlay: true)); }
+  @override
+  void dispose() { _c.dispose(); super.dispose(); }
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text('Vid Klipzo Player'), backgroundColor: Color(0xFF0D0D1A)),
+    body: Column(children: [
+      YoutubePlayer(controller: _c, showVideoProgressIndicator: true),
+      SizedBox(height: 20),
+      Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+        ElevatedButton.icon(onPressed: () => AdHelper.i.showAndRun(() => DownloadMgr.i.downloadYT(widget.url, true)), icon: Icon(Icons.headphones), label: Text('Audio')),
+        ElevatedButton.icon(onPressed: () => AdHelper.i.showAndRun(() => DownloadMgr.i.downloadYT(widget.url, false)), style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFE040FB)), icon: Icon(Icons.download), label: Text('Download MP4')),
+      ]),
+      Spacer(), BannerBox(),
+    ]),
+  );
+}
+
+class WebPage extends StatefulWidget {
+  final String url, title;
+  WebPage({required this.url, required this.title});
+  @override
+  _WebPageState createState() => _WebPageState();
+}
+
+class _WebPageState extends State<WebPage> {
+  late WebViewController _wc;
+  @override
+  void initState() {
+    super.initState();
+    _wc = WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted)..setUserAgent('Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120.0.0.0 Mobile Safari/537.36')..loadRequest(Uri.parse(widget.url));
+  }
+  Future<void> _grab() async {
+    var js = "(function(){var v=document.querySelector('video');if(v){var s=v.currentSrc||v.src;if(s&&s.indexOf('http')===0&&s.indexOf('blob:')!==0)return s;}var m=document.querySelector('meta[property=\"og:video\"]');return m?m.content:'';})()";
+    var res = (await _wc.runJavaScriptReturningResult(js)).toString().replaceAll('"', '').trim();
+    if (res.startsWith('http')) { AdHelper.i.showAndRun(() { DownloadMgr.i.downloadDirect(res); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('डाउनलोड शुरू! Downloads टैब देखें'))); }); }
+    else { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('पहले वीडियो प्ले करें, फिर डाउनलोड दबाएँ'))); }
+  }
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(widget.title), backgroundColor: Color(0xFF0D0D1A), actions: [IconButton(icon: Icon(Icons.refresh), onPressed: () => _wc.reload())]),
+    body: WebViewWidget(controller: _wc),
+    bottomNavigationBar: SafeArea(child: Padding(padding: EdgeInsets.all(10), child: ElevatedButton.icon(onPressed: _grab, style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFD500F9), minimumSize: Size(double.infinity, 48)), icon: Icon(Icons.download, color: Colors.white), label: Text('इस पेज का वीडियो डाउनलोड करें', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))))),
+  );
+}
+
+class DownloadsTab extends StatefulWidget {
+  @override
+  _DownloadsTabState createState() => _DownloadsTabState();
+}
+
+class _DownloadsTabState extends State<DownloadsTab> {
+  @override
+  void initState() { super.initState(); DownloadMgr.i.onUpdate = () { if (mounted) setState(() {}); }; }
+  @override
+  Widget build(BuildContext context) {
+    var list = DownloadMgr.i.items;
+    return SafeArea(child: list.isEmpty ? Center(child: Text('अभी कोई डाउनलोड नहीं है', style: TextStyle(color: Colors.white54))) : ListView.builder(padding: EdgeInsets.all(14), itemCount: list.length, itemBuilder: (_, i) => Card(color: Color(0xFF16162B), child: ListTile(title: Text(list[i]['title']), subtitle: LinearProgressIndicator(value: (list[i]['prog'] as num).toDouble(), color: Color(0xFFE040FB)), trailing: Text(list[i]['status'], style: TextStyle(color: Color(0xFF00E5FF), fontSize: 12))))));
   }
 }
