@@ -10,7 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
   youtube_player_flutter: ^9.1.1
-  youtube_explode_dart: ^2.3.6
+  youtube_explode_dart: ^2.3.10
+  video_player: ^2.9.2
   webview_flutter: ^4.10.0
   http: ^1.2.2
   path_provider: ^2.1.5
