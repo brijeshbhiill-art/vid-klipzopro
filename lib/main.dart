@@ -9,18 +9,22 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await SubManager.i.init();
-  await MobileAds.instance.initialize();
-  AdHelper.i.loadAd();
   runApp(MaterialApp(
     title: 'Vid Klipzo Pro',
     debugShowCheckedModeBanner: false,
     theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: Color(0xFF0D0D1A), primaryColor: Color(0xFF00E5FF)),
     home: SplashScreen(),
   ));
+  _initBg();
 }
+
+Future _initBg() async {
+  try { await SubManager.i.init(); } catch (_) {}
+  try { await MobileAds.instance.initialize(); AdHelper.i.loadAd(); } catch (_) {}
+}
+
 
 class SubManager {
   static final SubManager i = SubManager();
