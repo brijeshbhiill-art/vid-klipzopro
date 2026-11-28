@@ -1,25 +1,29 @@
-name: vid_klipzo_pro
-description: Vid Klipzo Pro Video Player and Downloader
-publish_to: 'none'
-version: 1.0.0+1
+name: Build Vid Klipzo Pro APK
 
-environment:
-  sdk: '>=3.0.0 <4.0.0'
+on:
+  push:
+    branches: [ main ]
 
-dependencies:
-  flutter:
-    sdk: flutter
-  youtube_player_flutter: ^9.1.1
-  youtube_explode_dart: ^2.3.6
-  webview_flutter: ^4.10.0
-  http: ^1.2.2
-  path_provider: ^2.1.5
-  google_mobile_ads: ^9.2.0
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^3.0.0
-
-flutter:
-  uses-material-design: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - name: Setup Android Project
+        run: |
+          flutter create --platforms=android .
+          sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET"/>\n    <application|' android/app/src/main/AndroidManifest.xml
+          sed -i 's|</application>|        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/>\n    </application>|' android/app/src/main/AndroidManifest.xml
+      - name: Build APK
+        run: |
+          flutter pub get
+          find ~/.pub-cache -name "build.gradle" -exec sed -i "s/proguard-android.txt/proguard-android-optimize.txt/g" {} +
+          flutter build apk --release
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vid-Klipzo-Pro-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
